@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>SmartSummary</title>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#667eea,#764ba2);
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.container{
+background:white;
+width:750px;
+padding:40px;
+border-radius:20px;
+box-shadow:0 20px 50px rgba(0,0,0,0.25);
+}
+
+h1{
+text-align:center;
+margin-top:0;
+}
+
+.subtitle{
+text-align:center;
+color:#666;
+margin-bottom:25px;
+}
+
+textarea{
+width:100%;
+height:200px;
+padding:15px;
+border-radius:10px;
+border:1px solid #ddd;
+font-size:15px;
+resize:none;
+}
+
+.controls{
+margin-top:15px;
+display:flex;
+gap:10px;
+}
+
+select{
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+padding:12px 20px;
+border:none;
+border-radius:8px;
+background:#667eea;
+color:white;
+cursor:pointer;
+font-size:15px;
+}
+
+button:hover{
+background:#5563d8;
+}
+
+#summary{
+margin-top:25px;
+background:#f6f7fb;
+padding:20px;
+border-radius:10px;
+min-height:60px;
+}
+
+ul{
+padding-left:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>SmartSummary</h1>
+<p class="subtitle">Résume tes textes intelligemment</p>
+
+<textarea id="text" placeholder="Colle ton texte ici..."></textarea>
+
+<div class="controls">
+
+<select id="mode">
+<option value="3">Résumé court</option>
+<option value="5">Résumé moyen</option>
+<option value="8">Résumé long</option>
+</select>
+
+<button onclick="summarize()">Résumer</button>
+
+</div>
+
+<div id="summary"></div>
+
+</div>
+
+<script>
+
+function summarize(){
+
+let text=document.getElementById("text").value;
+
+if(text.length<50){
+document.getElementById("summary").innerHTML="Texte trop court.";
+return;
+}
+
+let sentenceList=text.match(/[^\.!\?]+[\.!\?]+/g);
+
+if(!sentenceList){
+sentenceList=text.split(".");
+}
+
+let words=text.toLowerCase().match(/\b[a-zàâçéèêëîïôûùüÿñæœ]+\b/g);
+
+let freq={};
+
+words.forEach(word=>{
+if(word.length>3){
+freq[word]=(freq[word]||0)+1;
+}
+});
+
+let scored=sentenceList.map((sentence,index)=>{
+
+let score=0;
+
+sentence.toLowerCase().split(/\W+/).forEach(word=>{
+score+=freq[word]||0;
+});
+
+return{
+sentence:sentence.trim(),
+score:score,
+index:index
+}
+
+});
+
+scored.sort((a,b)=>b.score-a.score);
+
+let length=parseInt(document.getElementById("mode").value);
+
+let best=scored.slice(0,length);
+
+best.sort((a,b)=>a.index-b.index);
+
+let html="<ul>";
+
+best.forEach(s=>{
+html+="<li>"+s.sentence+"</li>";
+});
+
+html+="</ul>";
+
+document.getElementById("summary").innerHTML=html;
+
+}
+
+</script>
+
+</body>
+</html>
